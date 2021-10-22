@@ -1,0 +1,20 @@
+#!/bin/bash
+exec 1>&2
+CHAINCODE_SOURCE_DIR="$1"
+BUILD_OUTPUT_DIR="$3"
+
+cd $CHAINCODE_SOURCE_DIR/src
+cp -R * $BUILD_OUTPUT_DIR
+
+# transfer statedb index metadata build directory so release stage can transfer to release directory
+if [ -d "$CHAINCODE_SOURCE_DIR/META-INF" ]; then
+    cp -a "$CHAINCODE_SOURCE_DIR/META-INF" "$BUILD_OUTPUT_DIR/"
+fi
+
+cd $BUILD_OUTPUT_DIR
+
+if [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ]; then
+    npm ci --only=production
+else
+    npm install --production
+fi
